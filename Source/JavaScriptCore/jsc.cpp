@@ -87,6 +87,7 @@
 #include <wtf/StringPrintStream.h>
 #include <wtf/text/StringBuilder.h>
 
+
 #if OS(WINDOWS)
 #include <direct.h>
 #else
@@ -129,6 +130,10 @@
 #define PATH_MAX 4096
 #endif
 
+#include "JSRectangle0.h"
+#include "JSMatrix0.h"
+
+
 using namespace JSC;
 using namespace WTF;
 
@@ -166,6 +171,7 @@ public:
     }
 
     typedef JSNonFinalObject Base;
+    static const bool needsDestruction = false;
 
     Root* root() const { return m_root.get(); }
     void setRoot(VM& vm, Root* root) { m_root.set(vm, this, root); }
@@ -925,6 +931,8 @@ static EncodedJSValue JSC_HOST_CALL functionCreateRoot(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionCreateElement(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionGetElement(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionCreateSimpleObject(ExecState*);
+static EncodedJSValue JSC_HOST_CALL functionCreateMatrix0(ExecState* exec);
+static EncodedJSValue JSC_HOST_CALL functionCreateRectangle0(ExecState* exec);
 static EncodedJSValue JSC_HOST_CALL functionGetHiddenValue(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionSetHiddenValue(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionPrintStdOut(ExecState*);
@@ -1256,6 +1264,9 @@ protected:
         addFunction(vm, "testWasmModuleFunctions", functionTestWasmModuleFunctions, 0);
 #endif
 
+        addConstructableFunction(vm, "Matrix0", functionCreateMatrix0, 0);
+        addConstructableFunction(vm, "Rectangle0", functionCreateRectangle0, 0);
+        
         if (!arguments.isEmpty()) {
             JSArray* array = constructEmptyArray(globalExec(), 0);
             for (size_t i = 0; i < arguments.size(); ++i)
@@ -1726,6 +1737,21 @@ EncodedJSValue JSC_HOST_CALL functionCreateSimpleObject(ExecState* exec)
 {
     JSLockHolder lock(exec);
     return JSValue::encode(SimpleObject::create(exec->vm(), exec->lexicalGlobalObject()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCreateRectangle0(ExecState* exec)
+{
+    JSLockHolder lock(exec);
+    Rectangle* rectangle = new Rectangle(1.0f, 1.0f, 1.0f, 1.0f);
+    WTF::RefPtr<Rectangle> testrec(rectangle);
+    return JSValue::encode(JSRectangle0::create(exec->vm(), exec->lexicalGlobalObject(), rectangle));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCreateMatrix0(ExecState* exec)
+{
+    JSLockHolder lock(exec);
+    Matrix* matrix = new Matrix(2, 0, 0, 0.5, 11, 19);
+    return JSValue::encode(JSMatrix0::create(exec->vm(), exec->lexicalGlobalObject(), matrix));
 }
 
 EncodedJSValue JSC_HOST_CALL functionGetHiddenValue(ExecState* exec)
@@ -2758,7 +2784,7 @@ int main(int argc, char** argv)
     env.__fpscr &= ~0x01000000u;
     fesetenv( &env );
 #endif
-
+    
 #if OS(WINDOWS)
     // Cygwin calls ::SetErrorMode(SEM_FAILCRITICALERRORS), which we will inherit. This is bad for
     // testing/debugging, as it causes the post-mortem debugger not to be invoked. We reset the
@@ -2969,7 +2995,7 @@ static bool runWithScripts(GlobalObject* globalObject, const Vector<Script>& scr
     return success;
 }
 
-#define RUNNING_FROM_XCODE 0
+#define RUNNING_FROM_XCODE 1
 
 static void runInteractive(GlobalObject* globalObject)
 {
