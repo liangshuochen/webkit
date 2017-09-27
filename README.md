@@ -1,6 +1,6 @@
-# webkit
-JSC bindingTest (forked Unofficial mirror of the WebKit SVN repository)
+#JSC bindingTest (forked Unofficial mirror of the WebKit SVN repository)
 
+打开目录里WebKit.xcworkspace工程文件，两个测试用例的scheme分别是jsc-private-binding和jsc-binding.
 
 > 测试用例的js代码 
 > 参考https://github.com/domchen/V8Performace
@@ -16,7 +16,8 @@ JSC bindingTest (forked Unofficial mirror of the WebKit SVN repository)
 - JSBinding--Time: 绑定方式测试耗时。将c++的Matrix类绑定为JS对象执行Matrix.transformBounds方法；将c++的Rectangle类绑定为JS对象执行Rectangle.setTo; 其中函数setTo传参为4个float, transformBounds传参为js对象。
 - JSBinding2--Time: 同上，但是将setTo绑定函数传参为一个TypedArray.
 
-而 JSC API binding是使用JSC对外API绑定机制。而private binding则是直接操作JS virtual machine的绑定机制，即safari的dom节点，webGL采用的绑定机制。
+而 JSC API binding是使用JSC对外API绑定机制。而private binding则是直接操作JS
+virtual machine的绑定机制，即safari的dom节点和webGL采用的绑定机制。
 
 **结论**
 1. 使用JIT的情况下，safari使用的JSC内部绑定机制比JSC对外API的绑定机制，在传参为number时效率高为8~9倍，传参为typedArray时效率高7~8倍。
